@@ -9,11 +9,15 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: process.env.FRONTEND_URL || '*'
 }));
 app.use(express.json());
 
 // Routes
+app.get('/', (req, res) => {
+  res.json({ message: 'Kanban Board API is running successfully!' });
+});
+
 app.use('/api', apiRoutes);
 
 // Health check
