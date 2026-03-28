@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  avatar       String?
+  cardMembers  CardMember[]
+  comments     Comment[]
+}
+
+model Board {
+  id         Int      @id @default(autoincrement())
+  title      String
+  background String   @default("#0079bf")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  lists      List[]
+}
+
+model List {
+  id       Int     @id @default(autoincrement())
+  boardId  Int
+  board    Board   @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  title    String
+  position Float
+  cards    Card[]
+}
+
+model Card {
+  id          Int       @id @default(autoincrement())
+  listId      Int
+  list        List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  position    Float
+  dueDate     DateTime?
+  coverColor  String?
+  archived    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  labels      CardLabel[]
+  members     CardMember[]
+  checklists  Checklist[]
+  comments    Comment[]
+}
+
+model Label {
+  id    Int         @id @default(autoincrement())
+  name  String?
+  color String
+  cards CardLabel[]
+}
+
+model CardLabel {
+  cardId  Int
+  labelId Int
+  card    Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  @@id([cardId, labelId])
+}
+
+model CardMember {
+  cardId Int
+  userId Int
+  card   Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([cardId, userId])
+}
+
+model Checklist {
+  id     Int             @id @default(autoincrement())
+  cardId Int
+  card   Card            @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  title  String
+  items  ChecklistItem[]
+}
+
+model ChecklistItem {
+  id          Int       @id @default(autoincrement())
+  checklistId Int
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  text        String
+  isCompleted Boolean   @default(false)
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  cardId    Int
+  userId    Int
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  text      String
+  createdAt DateTime @default(now())
+}
